@@ -441,7 +441,6 @@ static __init int mobdev_init(void)
 
 	/* Initialize each cdevice */
 	for (i = 0; i < mob_devs_num; i++) {
-		mutex_init(&mob_devices[i].lock);
 		result = mobdev_init_cdev(&mob_devices[i], i);
 		if (result < 0) {
 			pr_warn("Error adding mob device %zu\n", i);

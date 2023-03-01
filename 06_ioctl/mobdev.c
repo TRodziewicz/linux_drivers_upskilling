@@ -291,13 +291,13 @@ long mobdev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 
 	if (_IOC_TYPE(cmd) != MOBDEV_IOC_MAGIC)
 		return -ENOTTY;
-	
+
 	if (_IOC_DIR(cmd) & (_IOC_READ | _IOC_WRITE)) {
-		if(!access_ok((void __user *)arg, _IOC_SIZE(cmd)))
+		if (!access_ok((void __user *)arg, _IOC_SIZE(cmd)))
 			return -EFAULT;
-		
+
 		if (_IOC_SIZE(cmd) > sizeof(mdd))
-            return -ENOTTY;
+			return -ENOTTY;
 
 		if (copy_from_user(&mdd, up, _IOC_SIZE(cmd))) {
 			pr_err("copy from user failed!\n");
@@ -313,34 +313,36 @@ long mobdev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	if (mutex_lock_interruptible(&mdev->lock))
 		return -ERESTARTSYS;
 
-	switch(cmd) {
-		case MOBDEV_IOC_RESET:
-			memset(mdev->p_data, 0, mdev->size);
-			mdev->size = 0;
-			break;
+	switch (cmd) {
+	case MOBDEV_IOC_RESET:
+		memset(mdev->p_data, 0, mdev->size);
+		mdev->size = 0;
+		break;
 
-		case MOBDEV_IOC_SET:
-			if (mdd.size + mdd.off > DATA_MAX_SIZE) {
-				ret = -EFBIG;
-			} else if (copy_from_user(mdev->p_data + mdd.off, mdd.data, mdd.size)) {
-				pr_err("copy from user failed!\n");
-				ret = -EFAULT;
-			} else if (mdd.size + mdd.off > mdev->size) {
-				mdev->size = mdd.size + mdd.off;
-			}
-			break;
-		
-		case MOBDEV_IOC_GET:
-			if (mdd.size + mdd.off > DATA_MAX_SIZE) {
-				ret = -EFBIG;
-			} else if (copy_to_user(mdd.data, mdev->p_data + mdd.off, mdd.size)) {
-				pr_err("copy to user failed!\n");
-				ret = -EFAULT;
-			}
-			break;
+	case MOBDEV_IOC_SET:
+		if (mdd.size + mdd.off > DATA_MAX_SIZE) {
+			ret = -EFBIG;
+		} else if (copy_from_user(mdev->p_data + mdd.off, mdd.data,
+					  mdd.size)) {
+			pr_err("copy from user failed!\n");
+			ret = -EFAULT;
+		} else if (mdd.size + mdd.off > mdev->size) {
+			mdev->size = mdd.size + mdd.off;
+		}
+		break;
 
-		default:
-			ret = -ENOTTY;
+	case MOBDEV_IOC_GET:
+		if (mdd.size + mdd.off > DATA_MAX_SIZE) {
+			ret = -EFBIG;
+		} else if (copy_to_user(mdd.data, mdev->p_data + mdd.off,
+					mdd.size)) {
+			pr_err("copy to user failed!\n");
+			ret = -EFAULT;
+		}
+		break;
+
+	default:
+		ret = -ENOTTY;
 	}
 
 	mutex_unlock(&mdev->lock);
@@ -442,7 +444,6 @@ static __init int mobdev_init(void)
 			pr_warn("Error adding mob device %zu\n", i);
 			goto clean_cdevs;
 		}
-		mutex_init(&mob_devices[i].lock);
 	}
 
 	mobdev_create_proc();

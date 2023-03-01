@@ -356,7 +356,6 @@ static __init int mobdev_init(void)
 			pr_warn("Error adding mob device %zu\n", i);
 			goto clean_cdevs;
 		}
-		mutex_init(&mob_devices[i].lock);
 	}
 
 	mobdev_create_proc();
